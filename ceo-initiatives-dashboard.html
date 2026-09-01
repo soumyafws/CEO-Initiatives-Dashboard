@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEO Initiatives — Flatworld Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --paper: #F7F3EC;
+    --card: #FCFAF5;
+    --ink: #241A16;
+    --ink-soft: #7A6B62;
+    --line: #E2D8C9;
+    --line-strong: #D2C4AF;
+    --red: #A82C21;
+    --red-deep: #6E1D15;
+    --red-soft: #F2DED9;
+    --teal: #12684F;
+    --teal-soft: #DCEAE3;
+    --amber: #93591A;
+    --amber-soft: #F1E3C9;
+    --grey: #8A7F76;
+    --grey-soft: #EAE3D8;
+    --r: 3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1260px;margin:0 auto;padding:0 0 60px;}
+
+  /* ===== Command band ===== */
+  .band{
+    background:linear-gradient(100deg, var(--red-deep) 0%, var(--red) 100%);
+    color:#F7EEE9;
+    padding:28px 30px 0;
+  }
+  .band-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:14px;
+    padding-bottom:22px;
+  }
+  .band-top .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:#EFC9BE;
+    margin-bottom:8px;
+  }
+  .band-top h1{
+    font-family:'Archivo',sans-serif;
+    font-weight:900;
+    font-size:38px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:#FBF3ED;
+  }
+  .band-top .meta{
+    font-family:'Space Mono',monospace;
+    font-size:11.5px;
+    color:#EFC9BE;
+    text-align:right;
+    line-height:1.8;
+    padding-top:4px;
+  }
+
+  .ticker{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+  }
+  .tick{
+    padding:16px 22px 20px 0;
+    border-left:1px solid rgba(247,238,233,0.22);
+    padding-left:22px;
+  }
+  .tick:first-child{border-left:none;padding-left:0;}
+  .tick .num{
+    font-family:'Archivo',sans-serif;
+    font-weight:800;
+    font-size:30px;
+    color:#FBF3ED;
+    line-height:1;
+  }
+  .tick .num.flag{color:#F6C9BC;}
+  .tick .lbl{
+    font-family:'Space Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#E3B3A6;
+    margin-top:6px;
+  }
+
+  /* ===== Layout ===== */
+  .layout{
+    display:grid;
+    grid-template-columns:296px 1fr;
+    gap:0;
+    margin:0 24px;
+    transform:translateY(-1px);
+    border:1px solid var(--line-strong);
+    background:var(--line-strong);
+    gap:1px;
+  }
+  @media (max-width:840px){
+    .layout{grid-template-columns:1fr; margin:0 14px;}
+    .band{padding:24px 18px 0;}
+    .ticker{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ===== Docket list ===== */
+  .docket{background:var(--card);}
+  .docket-head{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+    padding:14px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .docket-subhead{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+    padding:14px 18px 10px;
+    border-top:2px solid var(--line-strong);
+    margin-top:4px;
+  }
+  .entry{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:var(--card);
+    border:none;
+    border-bottom:1px solid var(--line);
+    padding:15px 18px;
+    cursor:pointer;
+    font-family:'Work Sans',sans-serif;
+    color:var(--ink);
+  }
+  .entry:hover{background:var(--grey-soft);}
+  .entry:focus-visible{outline:2px solid var(--red);outline-offset:-2px;}
+  .entry.active{
+    background:var(--red-soft);
+    box-shadow:inset 4px 0 0 var(--red);
+  }
+  .entry .row1{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .entry .idx{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .entry .name{
+    font-size:13.5px;
+    font-weight:600;
+    line-height:1.4;
+    margin-bottom:7px;
+  }
+  .tag{
+    display:inline-block;
+    font-family:'Space Mono',monospace;
+    font-size:10px;
+    letter-spacing:.03em;
+    padding:2px 6px;
+    border:1px solid currentColor;
+  }
+  .tag.active{color:var(--teal);}
+  .tag.attention{color:var(--amber);}
+  .tag.stalled{color:var(--red);}
+  .tag.complete{color:var(--grey);}
+  .entry .row2{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .entry .pct{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+  }
+
+  /* ===== Case file panel ===== */
+  .panel{
+    background:var(--card);
+    padding:34px 36px 40px;
+    min-height:540px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .stamp{
+    position:absolute;
+    top:30px;
+    right:38px;
+    width:104px;
+    height:104px;
+    border-radius:50%;
+    border:2.5px dashed currentColor;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    transform:rotate(-9deg);
+    font-family:'Archivo',sans-serif;
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.03em;
+    line-height:1.25;
+    padding:6px;
+    opacity:0.92;
+  }
+  .stamp.active{color:var(--teal);}
+  .stamp.attention{color:var(--amber);}
+  .stamp.stalled{color:var(--red);}
+  .stamp.complete{color:var(--grey);}
+
+  .panel-head{
+    max-width:74%;
+    padding-bottom:20px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:22px;
+  }
+  .panel-head .file-no{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--red);
+    letter-spacing:.08em;
+    margin-bottom:8px;
+  }
+  .panel-head h2{
+    font-family:'Archivo',sans-serif;
+    font-size:26px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .panel-head .sub{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.65;
+  }
+  .panel-facts{
+    display:flex;
+    gap:26px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .panel-facts b{color:var(--ink); font-weight:700;}
+
+  .section-label{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--ink);
+    margin:30px 0 14px;
+    padding-bottom:6px;
+    border-bottom:2px solid var(--red);
+    display:inline-block;
+  }
+  .section-label:first-of-type{margin-top:0;}
+
+  /* Service selector */
+  .service-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:18px 0 26px;
+  }
+  .service-chip{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.03em;
+    background:var(--card);
+    color:var(--ink-soft);
+    border:1px solid var(--line-strong);
+    padding:7px 13px;
+    cursor:pointer;
+  }
+  .service-chip:hover{border-color:var(--red); color:var(--ink);}
+  .service-chip:focus-visible{outline:2px solid var(--red); outline-offset:1px;}
+  .service-chip.active{
+    background:var(--red);
+    border-color:var(--red);
+    color:#F7EEE9;
+  }
+
+  /* Funnel as a step track */
+  .track{
+    display:flex;
+    align-items:flex-start;
+    padding:6px 4px 4px;
+  }
+  .step{
+    flex:1;
+    text-align:center;
+    position:relative;
+  }
+  .step .connector{
+    position:absolute;
+    top:9px;
+    left:-50%;
+    width:100%;
+    height:2px;
+    background:var(--line-strong);
+    z-index:0;
+  }
+  .step:first-child .connector{display:none;}
+  .step.filled .connector{background:var(--red);}
+  .step .node{
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--card);
+    border:2.5px solid var(--line-strong);
+    margin:0 auto 10px;
+    position:relative;
+    z-index:1;
+  }
+  .step.filled .node{border-color:var(--red); background:var(--red);}
+  .step .snum{
+    font-family:'Archivo',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    color:var(--ink);
+  }
+  .step .sname{
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+    line-height:1.3;
+  }
+
+  /* Progress */
+  .progress-row{display:flex;align-items:center;gap:12px;margin:14px 0 6px;}
+  .progress-track{flex:1;height:6px;background:var(--grey-soft);}
+  .progress-fill{height:100%;background:var(--red);transition:width .35s ease;}
+  .progress-pct{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-soft);min-width:80px;text-align:right;}
+
+  .subsection-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    margin:18px 0 4px;
+  }
+  .subsection-label.closed{color:var(--teal);}
+  .subsection-label .count{
+    background:var(--grey-soft);
+    color:var(--ink-soft);
+    padding:1px 6px;
+    font-weight:700;
+  }
+  .subsection-label.closed .count{background:var(--teal-soft); color:var(--teal);}
+  .none-note{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    padding:10px 0;
+  }
+
+  /* Action items — docket rows */
+  .action-item{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .action-item:last-child{border-bottom:none;}
+  .action-item .aidx{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    padding-top:2px;
+    min-width:26px;
+  }
+  .action-item input[type=checkbox]{
+    margin-top:2px;
+    width:16px;
+    height:16px;
+    accent-color:var(--red);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .action-item .ai-text{flex:1;font-size:13.5px;line-height:1.55;}
+  .action-item.done .ai-text{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-strong);}
+  .action-item .ai-meta{
+    display:flex;gap:12px;margin-top:5px;
+    font-family:'Space Mono',monospace;font-size:10.5px;color:var(--ink-soft);flex-wrap:wrap;
+  }
+  .ai-meta .due-flag{color:var(--red);font-weight:700;}
+
+  /* Notes */
+  .note{padding:12px 0;border-bottom:1px solid var(--line);}
+  .note:last-child{border-bottom:none;}
+  .note .note-date{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--red);margin-bottom:4px;}
+  .note .note-text{font-size:13.5px;line-height:1.6;}
+
+  .empty-state{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    height:440px;color:var(--ink-soft);text-align:center;padding:0 40px;
+  }
+  .empty-state .mark{
+    font-family:'Archivo',sans-serif;font-size:44px;font-weight:900;color:var(--line-strong);
+  }
+  .empty-state .msg{font-size:14.5px;font-weight:600;color:var(--ink-soft);font-family:'Space Mono',monospace;letter-spacing:.02em;}
+
+  /* ===== Toolbar / Add from Email ===== */
+  .toolbar-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:stretch;
+    gap:14px;
+    margin:0 24px 20px;
+  }
+  .toolbar-row .view-tabs{margin:0; flex:1;}
+  .add-email-btn{
+    font-family:'Space Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.04em;
+    background:var(--red);
+    color:#F7EEE9;
+    border:1px solid var(--red);
+    padding:0 20px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .add-email-btn:hover{background:var(--red-deep); border-color:var(--red-deep);}
+  .secondary-btn{
+    background:var(--card);
+    color:var(--ink);
+    border:1px solid var(--line-strong);
+  }
+  .secondary-btn:hover{background:var(--grey-soft); border-color:var(--ink-soft); color:var(--ink);}
+  .sync-status{
+    display:flex;
+    align-items:center;
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .ds-note{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(36,26,22,0.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .modal-box{
+    background:var(--card);
+    width:100%;
+    max-width:620px;
+    max-height:86vh;
+    overflow-y:auto;
+    border:1px solid var(--line-strong);
+  }
+  .modal-head{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:22px 26px 18px;
+    border-bottom:2px solid var(--ink);
+  }
+  .modal-eyebrow{
+    font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--red); margin-bottom:6px;
+  }
+  .modal-head h3{
+    font-family:'Archivo',sans-serif; font-weight:800; font-size:21px; margin:0; color:var(--ink);
+  }
+  .modal-close{
+    background:none; border:none; font-size:26px; line-height:1; color:var(--ink-soft); cursor:pointer;
+    padding:0 2px;
+  }
+  .modal-close:hover{color:var(--red);}
+  .modal-body{padding:22px 26px 28px;}
+  .modal-label{
+    display:block; font-family:'Space Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--ink-soft); margin-bottom:8px;
+  }
+  .email-textarea{
+    width:100%; min-height:150px;
+    font-family:'Work Sans',sans-serif; font-size:13px; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line-strong);
+    padding:12px; resize:vertical;
+  }
+  .parse-btn{
+    margin-top:12px;
+    font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:.04em;
+    background:var(--ink); color:var(--paper);
+    border:none; padding:10px 20px; cursor:pointer;
+  }
+  .parse-btn:hover{background:var(--red-deep);}
+  .parse-status{
+    font-family:'Space Mono',monospace; font-size:11.5px; color:var(--ink-soft);
+    margin-top:12px; line-height:1.6;
+  }
+
+  .parsed-item{
+    border:1px solid var(--line-strong);
+    padding:14px 16px;
+    margin-top:12px;
+    background:var(--paper);
+  }
+  .pi-include{
+    display:flex; align-items:center; gap:7px;
+    font-family:'Space Mono',monospace; font-size:10.5px; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;
+  }
+  .pi-field{
+    width:100%;
+    font-family:'Work Sans',sans-serif; font-size:13px; color:var(--ink);
+    background:var(--card); border:1px solid var(--line-strong);
+    padding:8px 10px; margin-bottom:8px;
+  }
+  .pi-row{display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:8px;}
+  .pi-row .pi-field{margin-bottom:0;}
+  .pi-file{font-family:'Space Mono',monospace; font-size:11.5px;}
+
+  .commit-btn{
+    margin-top:18px;
+    width:100%;
+    font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.05em;
+    background:var(--teal); color:#F2FBF7;
+    border:none; padding:13px; cursor:pointer;
+  }
+  .commit-btn:hover{background:#0D4E3D;}
+
+  footer.foot-note{
+    margin:20px 24px 0;
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    line-height:1.8;
+    border-top:1px solid var(--line-strong);
+    padding-top:16px;
+  }
+
+  /* ===== View tabs ===== */
+  .view-tabs{
+    display:flex;
+    gap:1px;
+    margin:0 24px 20px;
+    background:var(--line-strong);
+    border:1px solid var(--line-strong);
+  }
+  .view-tab{
+    flex:1;
+    background:var(--card);
+    border:none;
+    padding:13px 16px;
+    font-family:'Space Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .view-tab:hover{color:var(--ink);}
+  .view-tab.active{
+    background:var(--ink);
+    color:var(--paper);
+    font-weight:700;
+  }
+  .view-tab .n{
+    display:inline-block;
+    margin-left:6px;
+    padding:1px 6px;
+    background:var(--red-soft);
+    color:var(--red);
+  }
+  .view-tab.active .n{background:rgba(247,238,233,0.18); color:#F7EEE9;}
+
+  /* ===== Closed Log page ===== */
+  .closed-log{
+    margin:0 24px;
+    border:1px solid var(--line-strong);
+    background:var(--card);
+    padding:30px 34px 36px;
+  }
+  .closed-log-head{
+    padding-bottom:18px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:6px;
+  }
+  .closed-log-head h2{
+    font-family:'Archivo',sans-serif;
+    font-weight:800;
+    font-size:24px;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .closed-log-head .sub{
+    font-family:'Space Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .clog-section-label{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--ink);
+    margin:26px 0 12px;
+    padding-bottom:6px;
+    border-bottom:2px solid var(--teal);
+    display:inline-block;
+  }
+  .clog-file{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 16px;
+    background:var(--teal-soft);
+    border-left:3px solid var(--teal);
+    margin-bottom:8px;
+  }
+  .clog-file .cf-name{font-size:13.5px;font-weight:600;color:var(--ink);}
+  .clog-file .cf-meta{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--ink-soft);margin-top:3px;}
+  .clog-file .cf-tag{font-family:'Space Mono',monospace;font-size:10px;color:var(--teal);border:1px solid var(--teal);padding:2px 7px;white-space:nowrap;}
+
+  .clog-item{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    padding:13px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .clog-item:last-child{border-bottom:none;}
+  .clog-item .ci-mark{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:var(--teal);
+    padding-top:2px;
+  }
+  .clog-item .ci-body{flex:1;}
+  .clog-item .ci-text{font-size:13.5px;line-height:1.55;color:var(--ink);}
+  .clog-item .ci-meta{
+    display:flex;gap:12px;flex-wrap:wrap;margin-top:5px;
+    font-family:'Space Mono',monospace;font-size:10.5px;color:var(--ink-soft);
+  }
+  .clog-item .ci-meta .ci-file{color:var(--red);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="band">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow">Flatworld Solutions — Office of the CEO</div>
+        <h1>CEO Initiatives</h1>
+      </div>
+      <div class="meta">
+        Reviewing Officer: JACOB, CEO<br>
+        <span id="asof">—</span>
+      </div>
+    </div>
+    <div class="ticker" id="summaryStrip"></div>
+  </div>
+
+  <div class="toolbar-row">
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="open" id="tabOpen">Open Initiatives</button>
+      <button class="view-tab" data-view="closed" id="tabClosed">Closed Log <span class="n" id="closedTabCount">0</span></button>
+    </div>
+    <span class="sync-status" id="syncStatus"></span>
+    <button class="add-email-btn secondary-btn" id="dataSourceBtn">⚙ Data Source</button>
+    <button class="add-email-btn" id="addItemBtn">+ Add Action Item</button>
+  </div>
+
+  <div class="layout" id="layout">
+    <nav class="docket" id="ledger" aria-label="Initiatives">
+      <div class="docket-head">Open Initiatives (<span id="ledgerCount">0</span>)</div>
+    </nav>
+    <section class="panel" id="panel">
+      <div class="empty-state">
+        <div class="mark">§</div>
+        <div class="msg">SELECT AN INITIATIVE</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="closed-log" id="closedLog" style="display:none;"></section>
+
+  <footer class="foot-note">
+    Data on this page is saved in this browser only — it won't sync to another device or another person's browser. Set a published Excel/Sheet CSV link under "Data Source" to auto-refresh from your spreadsheet on every load, or use "+ Add Action Item" for one-off entries.
+  </footer>
+
+</div>
+
+<div class="modal-overlay" id="addItemModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow">Intake</div>
+        <h3>Add Action Item</h3>
+      </div>
+      <button class="modal-close" id="addItemModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label" for="aiFile">Initiative</label>
+      <select id="aiFile" class="pi-field" style="font-family:'Space Mono',monospace; margin-bottom:16px;"></select>
+
+      <label class="modal-label" for="aiText">Action item</label>
+      <input type="text" id="aiText" class="pi-field" placeholder="e.g. Follow up with Sunil on the billing report" style="margin-bottom:16px;">
+
+      <div class="pi-row" style="margin-bottom:6px;">
+        <input type="text" id="aiOwner" class="pi-field" placeholder="Owner">
+        <input type="text" id="aiDue" class="pi-field" placeholder="Due (e.g. Sep 5)">
+        <div></div>
+      </div>
+
+      <div class="parse-status" id="addItemStatus"></div>
+      <button class="commit-btn" id="addItemSubmitBtn">Add to Initiative</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dataSourceModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow">Configuration</div>
+        <h3>Data Source</h3>
+      </div>
+      <button class="modal-close" id="dataSourceModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label" for="csvUrlInput">Published CSV link (Google Sheets: File &rarr; Share &rarr; Publish to web &rarr; CSV)</label>
+      <input type="text" id="csvUrlInput" class="pi-field" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv" style="margin-bottom:14px;">
+      <div style="display:flex; gap:10px; margin-bottom:6px;">
+        <button class="parse-btn" id="saveCsvUrlBtn" style="margin-top:0;">Save &amp; Load Now</button>
+        <button class="parse-btn" id="refreshNowBtn" style="margin-top:0; background:var(--teal);">Refresh Now</button>
+        <button class="parse-btn" id="clearCsvUrlBtn" style="margin-top:0; background:var(--ink-soft);">Clear</button>
+      </div>
+      <div class="parse-status" id="dataSourceStatus"></div>
+      <div class="ds-note">
+        Expected columns: File Name, File Owner, File Status (On Track / Attention / Stalled / Complete), File Cadence, File Started, File Summary, Item Text, Item Owner, Item Due, Item Done (Y/N).
+        Rows with the same File Name are grouped into one initiative. When a link is saved, this page re-fetches it automatically every time it's opened.
+      </div>
+
+      <div class="ds-note" style="border-top:1px solid var(--line); margin-top:18px; padding-top:16px;">
+        <b style="color:var(--ink); font-family:'Space Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;">Send changes back toward Excel</b><br><br>
+        Every checkbox toggle and every action item added here — by you or your CEO — is logged. Nothing writes to the sheet automatically; this exports that log so you can apply it to the master sheet yourself: <b>Status Update</b> rows need the matching Item Done cell flipped, <b>New Item</b> rows need a brand new row added.
+        <span id="pendingCount" style="display:block; margin-top:10px; color:var(--red);"></span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="parse-btn" id="exportStatusBtn" style="background:var(--ink); flex:1;">Export Changes (CSV)</button>
+        <button class="parse-btn" id="clearPendingBtn" style="background:var(--ink-soft);">Clear Log</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+let initiatives = [
+  {
+    id: 1,
+    name: "Sales SEO Lead Follow-through",
+    owner: "Jacob + Service Line Heads",
+    cadence: "Weekly review",
+    started: "Feb 2026",
+    status: "attention",
+    summary: "CEO-level follow-up on SEO-sourced leads across service lines — tracking closures, pipeline quality, response time, and Diamond/Platinum lead conversion per the six-slide SEO deck format.",
+    stages: [
+      {name:"New SEO Leads", n:412, filled:true},
+      {name:"Diamond/Platinum", n:96, filled:true},
+      {name:"Response < 24h", n:71, filled:true},
+      {name:"Qualified", n:44, filled:false},
+      {name:"Closed", n:12, filled:false},
+    ],
+    services: [
+      { name:"Call Center", stages:[
+        {name:"New SEO Leads", n:80, filled:true},
+        {name:"Diamond/Platinum", n:15, filled:true},
+        {name:"Response < 24h", n:13, filled:true},
+        {name:"Qualified", n:9, filled:false},
+        {name:"Closed", n:3, filled:false},
+      ]},
+      { name:"Healthcare", stages:[
+        {name:"New SEO Leads", n:110, filled:true},
+        {name:"Diamond/Platinum", n:28, filled:true},
+        {name:"Response < 24h", n:9, filled:true},
+        {name:"Qualified", n:6, filled:false},
+        {name:"Closed", n:1, filled:false},
+      ]},
+      { name:"Mechanical", stages:[
+        {name:"New SEO Leads", n:65, filled:true},
+        {name:"Diamond/Platinum", n:14, filled:true},
+        {name:"Response < 24h", n:7, filled:true},
+        {name:"Qualified", n:4, filled:false},
+        {name:"Closed", n:1, filled:false},
+      ]},
+      { name:"Data Management", stages:[
+        {name:"New SEO Leads", n:70, filled:true},
+        {name:"Diamond/Platinum", n:16, filled:true},
+        {name:"Response < 24h", n:14, filled:true},
+        {name:"Qualified", n:9, filled:false},
+        {name:"Closed", n:3, filled:false},
+      ]},
+      { name:"Creative/Image", stages:[
+        {name:"New SEO Leads", n:47, filled:true},
+        {name:"Diamond/Platinum", n:12, filled:true},
+        {name:"Response < 24h", n:11, filled:true},
+        {name:"Qualified", n:8, filled:false},
+        {name:"Closed", n:2, filled:false},
+      ]},
+      { name:"Engineering/CAD", stages:[
+        {name:"New SEO Leads", n:40, filled:true},
+        {name:"Diamond/Platinum", n:11, filled:true},
+        {name:"Response < 24h", n:10, filled:true},
+        {name:"Qualified", n:8, filled:false},
+        {name:"Closed", n:2, filled:false},
+      ]},
+    ],
+    actionItems: [
+      {text:"Nitesh (Healthcare) to explain 3-day avg response time on Diamond leads — target is 24h", owner:"Nitesh", due:"Sep 2", done:false, overdue:true},
+      {text:"Circulate July SEO what-if scenario deck to ELT ahead of Sept review", owner:"SS", due:"Sep 3", done:false},
+      {text:"Confirm Old MSuite / FW AI MSuite pipeline is fully merged in latest SalesDen export", owner:"Devaraj", due:"Aug 30", done:true},
+      {text:"Flag service lines below 60% Diamond lead response rate for CEO 1:1s", owner:"SS", due:"Sep 5", done:false},
+    ],
+    notes: [
+      {date:"Aug 25, 2026", text:"Healthcare and Mechanical both trending below target response time on Diamond leads two months running — worth a direct conversation, not just a dashboard flag."},
+      {date:"Aug 12, 2026", text:"CEO org performance deck presented; SEO section held up well versus targets except two service lines."},
+    ]
+  },
+  {
+    id: 2,
+    name: "Customer Outreach Initiative",
+    owner: "Salesperson-led, ELT tracked",
+    cadence: "Bi-weekly funnel check",
+    started: "Jun 2026",
+    status: "active",
+    summary: "ELT-sponsored outreach to a curated pipeline of 58 identified customers, moved through a multi-stage contact funnel by individual salespeople. Tracked via branded PDF report and matching HTML email summary.",
+    stages: [
+      {name:"Identified", n:58, filled:true},
+      {name:"Contacted", n:41, filled:true},
+      {name:"Engaged", n:23, filled:true},
+      {name:"Proposal Sent", n:9, filled:false},
+      {name:"Closed/Won", n:3, filled:false},
+    ],
+    actionItems: [
+      {text:"Chase 17 identified customers with zero contact logged in SalesDen since Aug 1", owner:"SS", due:"Aug 29", done:false, overdue:true},
+      {text:"Refresh branded PDF + HTML email body with current funnel counts before ELT sync", owner:"SS", due:"Sep 1", done:false},
+      {text:"Reconcile duplicate customer entries flagged in last funnel export", owner:"Trevor", due:"Aug 31", done:false},
+      {text:"Get proposal status update from 9 salespeople with active proposals out", owner:"Service Line Heads", due:"Sep 4", done:false},
+    ],
+    notes: [
+      {date:"Aug 22, 2026", text:"Engagement rate holding around 40% of contacted customers, ahead of the informal 30% benchmark set at kickoff."},
+      {date:"Aug 8, 2026", text:"Funnel PDF branding finalized — full-bleed footer bar, logo lockup approved by Jacob."},
+    ]
+  },
+  {
+    id: 3,
+    name: "Cross-Selling Initiative",
+    owner: "Bala (Marketing) + Service Heads",
+    cadence: "Monthly",
+    started: "Mar 2026",
+    status: "active",
+    summary: "Identifying existing clients of one service line who are candidates for a second or third Flatworld service, using the top-10-customers-by-service-line view as the primary account list.",
+    stages: [
+      {name:"Accounts Reviewed", n:120, filled:true},
+      {name:"Cross-Sell Candidates", n:38, filled:true},
+      {name:"Pitched", n:19, filled:false},
+      {name:"Closed", n:6, filled:false},
+    ],
+    actionItems: [
+      {text:"Rebuild top-10-by-service-line deck with Q3 numbers now that July actuals are locked", owner:"SS", due:"Sep 6", done:false},
+      {text:"Bala to shortlist 10 highest-fit cross-sell candidates from Data Management client base", owner:"Bala", due:"Sep 2", done:false},
+      {text:"Republic Services / US Ecology account — confirm second-service pitch has been made", owner:"Venkat", due:"Aug 30", done:false},
+    ],
+    notes: [
+      {date:"Aug 20, 2026", text:"Five Below and Acrisure both responded well to rebranded one-pagers — good candidates to lead the next cross-sell push."}
+    ]
+  },
+  {
+    id: 4,
+    name: "CRM Pipeline Health Reviews",
+    owner: "Per-salesperson, CEO reviewed",
+    cadence: "Monthly",
+    started: "Apr 2026",
+    status: "stalled",
+    summary: "Per-salesperson pipeline decks (CSA, Mechanical, Data Management, Creative/Image) built for CEO review of why leads aren't closing — used to unblock stuck deals directly with reps.",
+    stages: [
+      {name:"Decks Built", n:14, filled:true},
+      {name:"CEO Reviewed", n:6, filled:false},
+      {name:"Rep 1:1 Held", n:2, filled:false},
+    ],
+    actionItems: [
+      {text:"Schedule CEO 1:1s for 8 salespeople whose decks haven't been reviewed since June", owner:"SS", due:"Sep 8", done:false, overdue:true},
+      {text:"Bopanna Jan–June deck needs H2 numbers appended", owner:"SS", due:"Sep 3", done:false},
+    ],
+    notes: [
+      {date:"Jul 30, 2026", text:"This one has slipped — got deprioritized behind the F.A.I.R. Q2 event and July billing reporting. Needs a restart date."}
+    ]
+  },
+  {
+    id: 5,
+    name: "VP/AVP Role Definition Rollout",
+    owner: "Jacob, across 10 service lines",
+    cadence: "Quarterly",
+    started: "May 2026",
+    status: "complete",
+    summary: "Defined VP/AVP role scope and accountability across ten service lines for CEO presentation and org clarity; now in adoption phase across service line heads.",
+    stages: [
+      {name:"Roles Drafted", n:10, filled:true},
+      {name:"CEO Approved", n:10, filled:true},
+      {name:"Rolled Out", n:10, filled:true},
+    ],
+    actionItems: [
+      {text:"90-day check-in on role adoption with service line heads", owner:"Jacob", due:"Oct 15", done:false},
+    ],
+    notes: [
+      {date:"Jun 2, 2026", text:"Presented and approved. Moving to adoption-tracking rather than active build."}
+    ]
+  },
+];
+
+function computeStats(item){
+  const total = item.actionItems.length;
+  const done = item.actionItems.filter(a=>a.done).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  return {total, done, pct};
+}
+
+function statusLabel(s){
+  return {active:"ON TRACK", attention:"ATTENTION", stalled:"STALLED", complete:"COMPLETE"}[s] || s;
+}
+
+function renderSummary(){
+  const openFiles = initiatives.filter(it=>it.status!=='complete').length;
+  let openItems = 0, closedItems = 0, overdue = 0, attention = 0;
+  initiatives.forEach(it=>{
+    it.actionItems.forEach(a=>{
+      if(!a.done) openItems++;
+      if(a.done) closedItems++;
+      if(!a.done && a.overdue) overdue++;
+    });
+    if(it.status==='attention' || it.status==='stalled') attention++;
+  });
+  const strip = document.getElementById('summaryStrip');
+  strip.innerHTML = `
+    <div class="tick"><div class="num">${openFiles}</div><div class="lbl">Open Initiatives</div></div>
+    <div class="tick"><div class="num">${openItems}</div><div class="lbl">Open Action Items</div></div>
+    <div class="tick"><div class="num flag">${overdue}</div><div class="lbl">Overdue</div></div>
+    <div class="tick"><div class="num">${closedItems}</div><div class="lbl">Closed / Action Taken</div></div>
+  `;
+}
+
+let activeId = null;
+let selectedService = null; // service name currently filtered to, within the active initiative
+
+function makeEntry(it, i){
+  const {pct} = computeStats(it);
+  const btn = document.createElement('button');
+  btn.className = 'entry' + (it.id===activeId ? ' active':'');
+  btn.setAttribute('aria-pressed', it.id===activeId);
+  btn.innerHTML = `
+    <div class="row1">
+      <span class="idx">INITIATIVE N&deg;${String(i+1).padStart(2,'0')}</span>
+      <span class="tag ${it.status}">${statusLabel(it.status)}</span>
+    </div>
+    <div class="name">${it.name}</div>
+    <div class="row2">
+      <span class="pct">${pct}% of items closed</span>
+    </div>
+  `;
+  btn.addEventListener('click', ()=>{ activeId = it.id; selectedService = null; renderLedger(); renderPanel(); });
+  return btn;
+}
+
+function renderLedger(){
+  const ledger = document.getElementById('ledger');
+  const openFiles = initiatives.filter(it=>it.status!=='complete');
+  document.getElementById('ledgerCount').textContent = openFiles.length;
+
+  ledger.querySelectorAll('.entry, .docket-subhead').forEach(e=>e.remove());
+
+  openFiles.forEach((it)=>{
+    const i = initiatives.indexOf(it);
+    ledger.appendChild(makeEntry(it, i));
+  });
+}
+
+function renderPanel(){
+  const panel = document.getElementById('panel');
+  const it = initiatives.find(x=>x.id===activeId);
+  if(!it){
+    panel.innerHTML = `<div class="empty-state"><div class="mark">&sect;</div><div class="msg">SELECT AN INITIATIVE</div></div>`;
+    return;
+  }
+  const {total, done, pct} = computeStats(it);
+  const idx = initiatives.findIndex(x=>x.id===it.id);
+
+  const activeStages = (it.services && selectedService)
+    ? (it.services.find(s=>s.name===selectedService)?.stages || it.stages)
+    : it.stages;
+
+  const serviceRowHtml = it.services ? `
+    <div class="service-row">
+      <button class="service-chip ${!selectedService ? 'active':''}" data-service="">All Services</button>
+      ${it.services.map(s=>`<button class="service-chip ${selectedService===s.name?'active':''}" data-service="${s.name}">${s.name}</button>`).join('')}
+    </div>
+  ` : '';
+
+  const stagesHtml = (activeStages||[]).map(s=>`
+    <div class="step ${s.filled?'filled':''}">
+      <div class="connector"></div>
+      <div class="node"></div>
+      <div class="snum">${s.n}</div>
+      <div class="sname">${s.name}</div>
+    </div>
+  `).join('');
+
+  const openActionItems = it.actionItems.map((a,i)=>({...a, i})).filter(a=>!a.done);
+  const closedActionItems = it.actionItems.map((a,i)=>({...a, i})).filter(a=>a.done);
+
+  const renderActionItem = (a) => `
+    <div class="action-item ${a.done?'done':''}">
+      <span class="aidx">A${a.i+1}</span>
+      <input type="checkbox" ${a.done?'checked':''} data-idx="${a.i}" aria-label="Mark done: ${a.text}">
+      <div class="ai-text">
+        ${a.text}
+        <div class="ai-meta">
+          <span>${a.owner}</span>
+          <span class="${a.overdue && !a.done ? 'due-flag':''}">${a.done ? 'closed — was due ' : (a.overdue ? 'OVERDUE — was due ' : 'due ')}${a.due}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const openItemsHtml = openActionItems.length
+    ? openActionItems.map(renderActionItem).join('')
+    : `<div class="none-note">Nothing open — all action items on this initiative have been closed.</div>`;
+
+  const closedItemsHtml = closedActionItems.length
+    ? closedActionItems.map(renderActionItem).join('')
+    : `<div class="none-note">No items closed yet on this initiative.</div>`;
+
+  const notesHtml = (it.notes||[]).length ? (it.notes||[]).map(n=>`
+    <div class="note">
+      <div class="note-date">${n.date}</div>
+      <div class="note-text">${n.text}</div>
+    </div>
+  `).join('') : `<div class="none-note">No notes logged yet.</div>`;
+
+  panel.innerHTML = `
+    <div class="stamp ${it.status}">${statusLabel(it.status)}</div>
+    <div class="panel-head">
+      <div class="file-no">INITIATIVE N&deg;${String(idx+1).padStart(2,'0')} — OPENED ${it.started.toUpperCase()}</div>
+      <h2>${it.name}</h2>
+      <div class="sub">${it.summary}</div>
+      <div class="panel-facts">
+        <span>OWNER: <b>${it.owner}</b></span>
+        <span>CADENCE: <b>${it.cadence}</b></span>
+      </div>
+    </div>
+
+    ${activeStages && activeStages.length ? `
+    <div class="section-label">Funnel</div>
+    ${serviceRowHtml}
+    <div class="track">${stagesHtml}</div>
+    ` : ''}
+
+    <div class="section-label">Action Items — ${done} of ${total} closed</div>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-pct">${pct}% complete</div>
+    </div>
+
+    <div class="subsection-label">Open <span class="count">${openActionItems.length}</span></div>
+    <div>${openItemsHtml}</div>
+    ${closedActionItems.length ? `<div class="none-note">${closedActionItems.length} item${closedActionItems.length===1?'':'s'} closed on this initiative — see the Closed Log tab.</div>` : ''}
+
+    <div class="section-label">Latest Notes</div>
+    ${notesHtml}
+  `;
+
+  panel.querySelectorAll('.service-chip').forEach(chip=>{
+    chip.addEventListener('click', (e)=>{
+      selectedService = e.target.dataset.service || null;
+      renderPanel();
+    });
+  });
+
+  panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', (e)=>{
+      const i = +e.target.dataset.idx;
+      it.actionItems[i].done = e.target.checked;
+      it.actionItems[i].changedAt = new Date().toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+      logChange({
+        type: 'Status Update',
+        fileName: it.name,
+        itemText: it.actionItems[i].text,
+        owner: it.actionItems[i].owner,
+        due: it.actionItems[i].due,
+        done: it.actionItems[i].done ? 'Y' : 'N'
+      });
+      saveState();
+      renderSummary();
+      renderLedger();
+      renderPanel();
+    });
+  });
+}
+
+document.getElementById('asof').textContent = new Date().toLocaleDateString('en-US', {weekday:'short', year:'numeric', month:'short', day:'numeric'});
+
+let currentView = 'open';
+
+function renderClosedLog(){
+  const closedFiles = initiatives.filter(it=>it.status==='complete');
+  const closedItemsAcrossFiles = [];
+  initiatives.forEach(it=>{
+    it.actionItems.forEach((a,i)=>{
+      if(a.done) closedItemsAcrossFiles.push({...a, i, fileName:it.name, fileId:it.id});
+    });
+  });
+
+  document.getElementById('closedTabCount').textContent = closedFiles.length + closedItemsAcrossFiles.length;
+
+  const filesHtml = closedFiles.length
+    ? closedFiles.map(it=>`
+        <div class="clog-file" data-file="${it.id}" style="cursor:pointer;">
+          <div>
+            <div class="cf-name">${it.name}</div>
+            <div class="cf-meta">Opened ${it.started} · Owner: ${it.owner}</div>
+          </div>
+          <span class="cf-tag">INITIATIVE CLOSED</span>
+        </div>
+      `).join('')
+    : `<div class="none-note">No initiatives have been fully closed out yet.</div>`;
+
+  const itemsHtml = closedItemsAcrossFiles.length
+    ? closedItemsAcrossFiles.map(a=>`
+        <div class="clog-item">
+          <span class="ci-mark">&#10003;</span>
+          <div class="ci-body">
+            <div class="ci-text">${a.text}</div>
+            <div class="ci-meta">
+              <span class="ci-file">${a.fileName}</span>
+              <span>${a.owner}</span>
+              <span>was due ${a.due}</span>
+            </div>
+          </div>
+        </div>
+      `).join('')
+    : `<div class="none-note">No action items have been marked closed yet.</div>`;
+
+  const log = document.getElementById('closedLog');
+  log.innerHTML = `
+    <div class="closed-log-head">
+      <h2>Closed Log</h2>
+      <div class="sub">Everything marked done or fully closed out, in one place — pulled from across all files.</div>
+    </div>
+    <div class="clog-section-label">Closed Initiatives (${closedFiles.length})</div>
+    ${filesHtml}
+    <div class="clog-section-label">Closed / Action Taken Items (${closedItemsAcrossFiles.length})</div>
+    ${itemsHtml}
+  `;
+
+  log.querySelectorAll('.clog-file').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      activeId = +el.dataset.file;
+      selectedService = null;
+      switchView('open');
+      // temporarily allow the panel to show a closed file even though it's not in the open sidebar list
+      renderLedger();
+      renderPanel();
+    });
+  });
+}
+
+function switchView(view){
+  currentView = view;
+  document.getElementById('tabOpen').classList.toggle('active', view==='open');
+  document.getElementById('tabClosed').classList.toggle('active', view==='closed');
+  document.getElementById('layout').style.display = view==='open' ? 'grid' : 'none';
+  document.getElementById('closedLog').style.display = view==='closed' ? 'block' : 'none';
+  if(view==='closed') renderClosedLog();
+}
+
+document.getElementById('tabOpen').addEventListener('click', ()=>switchView('open'));
+document.getElementById('tabClosed').addEventListener('click', ()=>switchView('closed'));
+
+/* ===================== Persistence ===================== */
+// Uses the browser's own localStorage — this dashboard is meant to be hosted
+// and opened as a standalone page, not inside Claude's artifact preview.
+// Note: localStorage is per-browser/per-device, so data does NOT sync between
+// different people or different computers opening this same file/link.
+const STORAGE_KEY = 'ceo-docket-initiatives';
+const CSV_URL_KEY = 'ceo-docket-csv-url';
+const LAST_SYNC_KEY = 'ceo-docket-last-sync';
+const PENDING_KEY = 'ceo-docket-pending-changes';
+
+/* ===================== Pending Changes Log ===================== */
+// Every checkbox toggle or manually-added item gets logged here, separate
+// from the main data, so we know exactly what needs pushing back to Excel —
+// and whether it's a status update on an existing row or a brand new row.
+function getPendingChanges(){
+  try{
+    const raw = localStorage.getItem(PENDING_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(err){
+    return [];
+  }
+}
+
+function logChange(entry){
+  const changes = getPendingChanges();
+  changes.push({...entry, timestamp: new Date().toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})});
+  localStorage.setItem(PENDING_KEY, JSON.stringify(changes));
+  updatePendingBadge();
+}
+
+function clearPendingChanges(){
+  localStorage.removeItem(PENDING_KEY);
+  updatePendingBadge();
+}
+
+function updatePendingBadge(){
+  const badge = document.getElementById('dataSourceBtn');
+  if(!badge) return;
+  const n = getPendingChanges().length;
+  badge.textContent = n > 0 ? `⚙ Data Source (${n})` : '⚙ Data Source';
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initiatives));
+  }catch(err){
+    console.error('Save failed:', err);
+  }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      initiatives = JSON.parse(raw);
+    }else{
+      saveState(); // first run — seed storage with the sample data
+    }
+  }catch(err){
+    console.log('No stored data yet, using sample data.', err);
+  }
+}
+
+/* ===================== Data Source (CSV auto-refresh) ===================== */
+const STATUS_MAP = {
+  'on track':'active', 'active':'active',
+  'attention':'attention', 'needs attention':'attention',
+  'stalled':'stalled',
+  'complete':'complete', 'closed':'complete'
+};
+
+function updateSyncStatus(){
+  const el = document.getElementById('syncStatus');
+  const url = localStorage.getItem(CSV_URL_KEY);
+  const last = localStorage.getItem(LAST_SYNC_KEY);
+  if(!url){ el.textContent = ''; return; }
+  el.textContent = last ? `Synced from sheet · ${last}` : 'Sheet linked — not yet synced';
+}
+
+function rowsToInitiatives(rows){
+  const grouped = [];
+  const byName = {};
+  rows.forEach(row=>{
+    const name = (row['File Name']||'').trim();
+    if(!name) return;
+    if(!byName[name]){
+      const rawStatus = (row['File Status']||'').trim().toLowerCase();
+      const it = {
+        id: grouped.length + 1,
+        name: name,
+        owner: (row['File Owner']||'Unassigned').trim(),
+        status: STATUS_MAP[rawStatus] || 'active',
+        cadence: (row['File Cadence']||'').trim(),
+        started: (row['File Started']||'').trim(),
+        summary: (row['File Summary']||'').trim(),
+        stages: [],
+        actionItems: [],
+        notes: []
+      };
+      byName[name] = it;
+      grouped.push(it);
+    }
+    const itemText = (row['Item Text']||'').trim();
+    if(itemText){
+      byName[name].actionItems.push({
+        text: itemText,
+        owner: (row['Item Owner']||'Unassigned').trim(),
+        due: (row['Item Due']||'TBD').trim(),
+        done: (row['Item Done']||'').trim().toUpperCase() === 'Y'
+      });
+    }
+  });
+  return grouped;
+}
+
+function fetchAndLoadCsv(url, statusElId){
+  const statusEl = statusElId ? document.getElementById(statusElId) : null;
+  if(statusEl) statusEl.textContent = 'Fetching the sheet…';
+  return fetch(url)
+    .then(res=>{
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    })
+    .then(csvText=>{
+      const parsed = Papa.parse(csvText, {header:true, skipEmptyLines:true});
+      if(parsed.errors && parsed.errors.length){
+        console.warn('CSV parse warnings:', parsed.errors);
+      }
+      const newInitiatives = rowsToInitiatives(parsed.data);
+      if(newInitiatives.length === 0){
+        throw new Error('No rows with a File Name found — check the sheet has data in the expected columns.');
+      }
+      initiatives = newInitiatives;
+      saveState();
+      const now = new Date().toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+      localStorage.setItem(LAST_SYNC_KEY, now);
+      activeId = null;
+      selectedService = null;
+      renderSummary();
+      renderLedger();
+      renderPanel();
+      renderClosedLog();
+      updateSyncStatus();
+      if(statusEl) statusEl.textContent = `Loaded ${newInitiatives.length} initiative${newInitiatives.length===1?'':'s'} from the sheet — ${now}.`;
+    })
+    .catch(err=>{
+      console.error(err);
+      const msg = (err instanceof TypeError)
+        ? 'Could not reach that link. Check it\'s a live "Publish to web → CSV" link and that this page has internet access.'
+        : 'Fetched the link, but ' + err.message;
+      if(statusEl) statusEl.textContent = msg;
+      updateSyncStatus();
+    });
+}
+
+function openDataSourceModal(){
+  document.getElementById('csvUrlInput').value = localStorage.getItem(CSV_URL_KEY) || '';
+  document.getElementById('dataSourceStatus').textContent = '';
+  const n = getPendingChanges().length;
+  document.getElementById('pendingCount').textContent = n > 0
+    ? `${n} change${n===1?'':'s'} logged and ready to export.`
+    : 'No changes logged yet.';
+  document.getElementById('dataSourceModal').style.display = 'flex';
+}
+function closeDataSourceModal(){
+  document.getElementById('dataSourceModal').style.display = 'none';
+}
+
+document.getElementById('dataSourceBtn').addEventListener('click', openDataSourceModal);
+document.getElementById('dataSourceModalClose').addEventListener('click', closeDataSourceModal);
+document.getElementById('dataSourceModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'dataSourceModal') closeDataSourceModal();
+});
+
+document.getElementById('saveCsvUrlBtn').addEventListener('click', ()=>{
+  const url = document.getElementById('csvUrlInput').value.trim();
+  if(!url){ document.getElementById('dataSourceStatus').textContent = 'Paste a published CSV link first.'; return; }
+  localStorage.setItem(CSV_URL_KEY, url);
+  fetchAndLoadCsv(url, 'dataSourceStatus');
+});
+
+document.getElementById('refreshNowBtn').addEventListener('click', ()=>{
+  const url = localStorage.getItem(CSV_URL_KEY);
+  if(!url){ document.getElementById('dataSourceStatus').textContent = 'No sheet linked yet — save a link first.'; return; }
+  fetchAndLoadCsv(url, 'dataSourceStatus');
+});
+
+document.getElementById('clearCsvUrlBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(CSV_URL_KEY);
+  localStorage.removeItem(LAST_SYNC_KEY);
+  document.getElementById('csvUrlInput').value = '';
+  document.getElementById('dataSourceStatus').textContent = 'Sheet link cleared. This page will keep using its last-loaded data.';
+  updateSyncStatus();
+});
+
+function csvEscape(val){
+  const s = String(val==null ? '' : val);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+function exportStatusColumn(){
+  const changes = getPendingChanges();
+  if(changes.length === 0){
+    document.getElementById('dataSourceStatus').textContent = 'Nothing to export yet — no checkbox toggles or new items since the last sync.';
+    return;
+  }
+  const rows = [['Change Type','File Name','Item Text','Owner','Due','Done','When']];
+  changes.forEach(c=>{
+    rows.push([c.type, c.fileName, c.itemText, c.owner, c.due, c.done, c.timestamp]);
+  });
+  const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dashboard-changes-export.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  document.getElementById('dataSourceStatus').textContent =
+    `Exported ${changes.length} change${changes.length===1?'':'s'}. "Status Update" rows need the matching Item Done cell updated in your sheet; "New Item" rows need a brand new row added.`;
+}
+
+document.getElementById('exportStatusBtn').addEventListener('click', exportStatusColumn);
+
+document.getElementById('clearPendingBtn').addEventListener('click', ()=>{
+  clearPendingChanges();
+  document.getElementById('dataSourceStatus').textContent = 'Change log cleared.';
+});
+
+/* ===================== Add Action Item (manual) ===================== */
+function fileOptionsHtml(){
+  return initiatives.map(it=>`<option value="${it.id}">${it.name}</option>`).join('');
+}
+
+function openAddItemModal(){
+  document.getElementById('aiFile').innerHTML = fileOptionsHtml();
+  if(activeId) document.getElementById('aiFile').value = activeId; // default to whichever file is open
+  document.getElementById('aiText').value = '';
+  document.getElementById('aiOwner').value = '';
+  document.getElementById('aiDue').value = '';
+  document.getElementById('addItemStatus').textContent = '';
+  document.getElementById('addItemModal').style.display = 'flex';
+  document.getElementById('aiText').focus();
+}
+function closeAddItemModal(){
+  document.getElementById('addItemModal').style.display = 'none';
+}
+
+function submitAddItem(){
+  const fileId = +document.getElementById('aiFile').value;
+  const text = document.getElementById('aiText').value.trim();
+  const owner = document.getElementById('aiOwner').value.trim() || 'Unassigned';
+  const due = document.getElementById('aiDue').value.trim() || 'TBD';
+  const status = document.getElementById('addItemStatus');
+
+  if(!text){ status.textContent = 'Add a short description of the action item first.'; return; }
+  const target = initiatives.find(it=>it.id===fileId);
+  if(!target){ status.textContent = 'Pick which initiative this belongs to.'; return; }
+
+  target.actionItems.push({text, owner, due, done:false});
+  logChange({
+    type: 'New Item',
+    fileName: target.name,
+    itemText: text,
+    owner: owner,
+    due: due,
+    done: 'N'
+  });
+  saveState();
+  renderSummary();
+  renderLedger();
+  activeId = fileId;
+  renderPanel();
+  closeAddItemModal();
+}
+
+document.getElementById('addItemBtn').addEventListener('click', openAddItemModal);
+document.getElementById('addItemModalClose').addEventListener('click', closeAddItemModal);
+document.getElementById('addItemSubmitBtn').addEventListener('click', submitAddItem);
+document.getElementById('addItemModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'addItemModal') closeAddItemModal();
+});
+
+/* ===================== Init ===================== */
+(async function init(){
+  await loadState(); // start from cached/local data so the page never opens blank
+  renderSummary();
+  renderLedger();
+  renderPanel();
+  renderClosedLog(); // pre-compute the tab badge count without switching view
+  updateSyncStatus();
+  updatePendingBadge();
+
+  const savedUrl = localStorage.getItem(CSV_URL_KEY);
+  if(savedUrl){
+    fetchAndLoadCsv(savedUrl); // auto-refresh from the sheet every time this page loads
+  }
+})();
+</script>
+</body>
+</html>
